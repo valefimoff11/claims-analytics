@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import to_timestamp, to_date, col
+from pyspark.sql.functions import to_timestamp, to_date, col, lit
 
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType, DecimalType
 from pyspark.sql.types import ArrayType, DoubleType, BooleanType
@@ -55,7 +55,16 @@ contracts_df.show()
 transactions_df = contracts_df.join(claims_df, (contracts_df["SOURCE_SYSTEM"] == claims_df["CONTRACT_SOURCE_SYSTEM"]) &
    ( contracts_df["CONTRACT_ID"] == claims_df["CONTRACT_ID"])) \
     .withColumn("CLAIMS_CREATION_DATE",claims_df["CREATION_DATE"]) \
+    .withColumn("CLAIMS_SOURCE_SYSTEM", claims_df["SOURCE_SYSTEM"]) \
     .drop(claims_df["CREATION_DATE"]) \
+    .drop(claims_df["SOURCE_SYSTEM"]) \
     .drop(claims_df["CONTRACT_ID"])
+
+transactions_df.printSchema()
+transactions_df.show()
+
+transactions_df = transactions_df \
+                   .withColumn("CONTRACT_SOURCE_SYSTEM", lit("Europe 3")) \
+                   .withColumnRenamed("CONTRACT_ID", "CONTRACT_SOURCE_SYSTEM_ID")
 
 transactions_df.show()
